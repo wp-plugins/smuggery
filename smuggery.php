@@ -8,7 +8,7 @@ Description: Smuggery pulls all of your public photos from your SmugMug.com acco
 
 Author: Robby Grossman
 
-Version: 0.1
+Version: 0.2
 
 Author URI: http://www.freerobby.com
 */	
@@ -25,6 +25,59 @@ define('SMUGGERY_APPINFO', 'Smuggery/0.1 (http://www.freerobby.com/smuggery)');
 define('SMUGGERY_TAGGALLERY', '[smuggery=gallery]');
 // Post meta
 define('SMUGGERY_POSTMETAGALLERYHASH', 'smuggery_galleryhash');
+// SmugMug data
+global $SMUGGERY_SMUGMUGIMAGESIZES;
+$SMUGGERY_SMUGMUGIMAGESIZES = array(
+	'1' => 'Ti',
+	'2' => 'Th',
+	'3' => 'S',
+	'4' => 'M',
+	'5' => 'L',
+	'6' => 'XL',
+	'7' => 'X2',
+	'8' => 'X3',
+	'9' => 'O'
+);
+global $SMUGGERY_SMUGMUGIMAGESIZESNAMES;
+$SMUGGERY_SMUGMUGIMAGESIZESNAMES = array(
+	'1' => 'Tiny',
+	'2' => 'Thumbnail',
+	'3' => 'Small',
+	'4' => 'Medium',
+	'5' => 'Large',
+	'6' => 'X Large',
+	'7' => 'XX Large',
+	'8' => 'XXX Large',
+	'9' => 'Full Res'
+);
+global $SMUGGERY_SMUGMUGIMAGESIZESURLTOKENS;
+$SMUGGERY_SMUGMUGIMAGESIZESURLTOKENS = array(
+	'1' => 'TinyURL',
+	'2' => 'ThumbURL',
+	'3' => 'SmallURL',
+	'4' => 'MediumURL',
+	'5' => 'LargeURL',
+	'6' => 'XLargeURL',
+	'7' => 'X2LargeURL',
+	'8' => 'X3LargeURL',
+	'9' => 'OriginalURL'
+);
+
+global $SMUGGERY_SMUGMUGVIDEOSIZES;
+$SMUGGERY_SMUGMUGVIDEOSIZES = array(
+	'1' => '320',
+	'2' => '640',
+	'3' => '960',
+	'4' => '1280',
+);
+global $SMUGGERY_SMUGMUGVIDEOSIZESNAMES;
+$SMUGGERY_SMUGMUGVIDEOSIZESNAMES = array(
+	'1' => '320 x 240',
+	'2' => '640 x 480',
+	'3' => '960 x 720',
+	'4' => '1280 x 1024',
+);
+
 
 ////////////////////
 // Plugin options //
@@ -33,13 +86,17 @@ define('SMUGGERY_POSTMETAGALLERYHASH', 'smuggery_galleryhash');
 global $smuggery_optionnames;
 $smuggery_optionnames = array (
 	'smuggery_galleryTitle',
-	'smuggery_smugmugNickname'
+	'smuggery_smugmugNickname',
+	'smuggery_imageSize',
+	'smuggery_videoSize'
 	);
 
 global $smuggery_optionvals;
 $smuggery_optionvals = array (
 	"My Gallery",
-	NULL
+	NULL,
+	'4',
+	'640'
 );
 
 //////////////
@@ -136,6 +193,7 @@ function smuggery_substitutetags($content) {
 }
 function smuggery_substitutegallerytags($content) {
 	global $id;
+	global $SMUGGERY_SMUGMUGIMAGESIZESURLTOKENS;
 	
 	$start_pos = smuggery_findtagstart($content, SMUGGERY_TAGGALLERY);
 	while ($start_pos >= 0) {
@@ -149,8 +207,9 @@ function smuggery_substitutegallerytags($content) {
 		$f = new phpSmug('APIKey=' . SMUGGERY_APIKEY, 'AppName=' . SMUGGERY_APPINFO);
 		$f->login();
 		$images = $f->images_get("AlbumID=$album_id", "AlbumKey=$album_key", "Heavy=1");
+		$image_token = $SMUGGERY_SMUGMUGIMAGESIZESURLTOKENS[get_option('smuggery_imageSize')];
 		foreach ($images as $image) {
-			$rcontent .= '<a href="'.$image['LargeURL'].'" rel="lightbox['.$id.']"><img src="'.$image['TinyURL'].'" title="'.$image['Caption'].'" alt="'.$image['id'].'" /></a>';
+			$rcontent .= '<a href="'.$image[$image_token].'" rel="lightbox['.$id.']"><img src="'.$image['TinyURL'].'" title="'.$image['Caption'].'" alt="'.$image['id'].'" /></a>';
 	}
 		
 		$content = smuggery_mergeparsedtagcontent($content, SMUGGERY_TAGGALLERY, $rcontent);

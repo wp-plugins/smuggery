@@ -20,6 +20,8 @@ if (isset($_POST['validatenickname'])) {
 // If the form was just submitted (options updated), ...
 if (isset($_POST ['updatedisplayoptions'])) {
 	update_option ('smuggery_galleryTitle', htmlspecialchars ( $_POST [ 'smuggery_galleryTitle' ], ENT_QUOTES ) );
+	update_option ('smuggery_imageSize', htmlspecialchars ( $_POST [ 'smuggery_imageSize' ], ENT_QUOTES ) );
+	update_option ('smuggery_videoSize', htmlspecialchars ( $_POST [ 'smuggery_videoSize' ], ENT_QUOTES ) );
 ?>
 	<div id="message" class="updated fade">
 		<p>
@@ -59,8 +61,49 @@ catch (Exception $e) {
 
 <p>
 	Title of gallery:
-	<br />
-	<input type="text" name="smuggery_galleryTitle" size="100" value="<?php echo stripslashes ( get_option ( 'smuggery_galleryTitle' ) ); ?>" />
+	<input type="text" name="smuggery_galleryTitle" size="50" value="<?php echo stripslashes ( get_option ( 'smuggery_galleryTitle' ) ); ?>" />
+</p>
+<p>
+	Target Image Size:
+	<select name=smuggery_imageSize>
+	<?php
+	global $SMUGGERY_SMUGMUGIMAGESIZES;
+	global $SMUGGERY_SMUGMUGIMAGESIZESNAMES;
+	for ( $thisSize = 1; $thisSize <= count($SMUGGERY_SMUGMUGIMAGESIZES); $thisSize ++ ) {
+		echo '<option value="';
+		echo $thisSize;
+		// Do we select it?
+		if ( $thisSize == get_option ( 'smuggery_imageSize' ) ) {
+			echo '" selected="selected';
+		}
+		echo '">';
+		echo $SMUGGERY_SMUGMUGIMAGESIZESNAMES[$thisSize];
+		echo '</option>';
+	}
+	echo count($SMUGGERY_SMUGMUGIMAGESIZES);
+	?>
+	</select>
+<p>
+<p>
+	Target Video Size:
+	<select name=smuggery_videoSize>
+	<?php
+	global $SMUGGERY_SMUGMUGVIDEOSIZES;
+	global $SMUGGERY_SMUGMUGVIDEOSIZESNAMES;
+	for ( $thisSize = 1; $thisSize <= count($SMUGGERY_SMUGMUGVIDEOSIZES); $thisSize ++ ) {
+		echo '<option value="';
+		echo $thisSize;
+		// Do we select it?
+		if ( $thisSize == get_option ( 'smuggery_videoSize' ) ) {
+			echo '" selected="selected';
+		}
+		echo '">';
+		echo $SMUGGERY_SMUGMUGVIDEOSIZESNAMES[$thisSize];
+		echo '</option>';
+	}
+	echo count($SMUGGERY_SMUGMUGVIDEOSIZES);
+	?>
+	</select>
 </p>
 <p>
 	<input type="submit" name="updatedisplayoptions" value="Update Display Options" />
