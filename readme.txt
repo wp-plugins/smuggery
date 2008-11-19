@@ -1,7 +1,7 @@
 === Smuggery ===
 Contributors: freerobby
 Donate link: http://www.freerobby.com/donate
-Tags: smugmug, photos, pictures, gallery
+Tags: smugmug, photos, pictures, gallery, media
 Requires at least: 2.5
 Tested up to: 2.6.3
 Stable tag:
