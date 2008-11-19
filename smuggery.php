@@ -17,8 +17,14 @@ Author URI: http://www.freerobby.com
 ///////////////
 // Constants //
 ///////////////
-define( 'SMUGGERY_APIKEY', 'f83PiPGvYhcek14Zu8Og4rLPDYd2wsxH'); // Smuggery API key
-define( 'SMUGGERY_APPINFO', 'Smuggery/0.1 (http://www.freerobby.com/smuggery)');
+// Plugin metadata
+define('SMUGGERY_APIKEY', 'f83PiPGvYhcek14Zu8Og4rLPDYd2wsxH'); // Smuggery API key
+define('SMUGGERY_APPINFO', 'Smuggery/0.1 (http://www.freerobby.com/smuggery)');
+// Tags
+define('SMUGGERY_TAGGALLERY', '[smuggery=gallery]');
+// Post meta
+define('SMUGGERY_POSTMETAGALLERYHASH', 'smuggery_galleryhash');
+
 ////////////////////
 // Plugin options //
 ////////////////////
@@ -66,8 +72,8 @@ function smuggery_addpages () {
 	add_options_page ( 'Smuggery', 'Smuggery', 'edit_plugins', __FILE__, 'smuggery_optionspage');
 }
 // Content interrupt entry point!
-function smuggery_parsecontent ( $content ) {
-	return $content;
+function smuggery_parsecontent ($content) {
+	return smuggery_substitutetags($content);
 }
 function smuggery_install () {
 	// Add our options with their default values as defined.
@@ -95,4 +101,62 @@ function smuggery_uninstall () {
 function smuggery_optionspage () {
 	include  ( 'smuggery-options.php' );
 }
+
+/////////////////////
+// Content parsing //
+/////////////////////
+// Replace a tag with its content
+function smuggery_mergeparsedtagcontent ($content, $tag, $replacement) {
+	$start_pos = smuggery_findtagstart($content, $tag);
+	$end_pos = smuggery_findtagend($content, $tag);
+	$pre = substr($content, 0, $start_pos);
+	$post = substr($content, $end_pos, strlen($content) - $end_pos);
+	return $pre . $replacement . $post;		
+}
+// Find the starting position of first occurrance of $tag in $content. -1 on fail.
+function smuggery_findtagstart($content, $tag) {
+	$starting_pos = strpos($content, $tag);
+	if ($starting_pos === false)
+		return -1;
+	else
+		return $starting_pos;
+}
+// Find the ending position of first occurance of $tag in $content. -1 on fail.
+function smuggery_findtagend($content, $tag) {
+	$starting_pos = strpos($content, $tag);
+	if ($starting_pos === false)
+		return -1;
+	else
+		return $starting_pos + strlen ($tag);
+}
+function smuggery_substitutetags($content) {
+	// Galleries
+	$content = smuggery_substitutegallerytags($content);
+	return $content;
+}
+function smuggery_substitutegallerytags($content) {
+	global $id;
+	
+	$start_pos = smuggery_findtagstart($content, SMUGGERY_TAGGALLERY);
+	while ($start_pos >= 0) {
+		$end_pos = smuggery_findtagend($content, SMUGGERY_TAGGALLERY);
+		
+		// Generate replacement
+		$hash = get_post_meta($id, SMUGGERY_POSTMETAGALLERYHASH, $single=true);
+		$underscorepos=strpos($hash, '_');
+		$album_id = substr($hash, 0, $underscorepos);
+		$album_key = substr($hash, $underscorepos + 1, strlen($hash)-strlen($album_id));
+		$f = new phpSmug('APIKey=' . SMUGGERY_APIKEY, 'AppName=' . SMUGGERY_APPINFO);
+		$f->login();
+		$images = $f->images_get("AlbumID=$album_id", "AlbumKey=$album_key", "Heavy=1");
+		foreach ($images as $image) {
+			$rcontent .= '<a href="'.$image['MediumURL'].'"><img src="'.$image['TinyURL'].'" title="'.$image['Caption'].'" alt="'.$image['id'].'" /></a>';
+	}
+		
+		$content = smuggery_mergeparsedtagcontent($content, SMUGGERY_TAGGALLERY, $rcontent);
+		$start_pos = smuggery_findtagstart($content, SMUGGERY_TAGGALLERY);
+	}
+	return $content;
+}
+
 ?>
