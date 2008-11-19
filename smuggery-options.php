@@ -6,10 +6,20 @@ desc:	Options page for Smuggery Wordpress Plugin
 */
 ?>
 <?php
+// SmugMug API
+$f = new phpSmug('APIKey=' . SMUGGERY_APIKEY, 'AppName=' . SMUGGERY_APPINFO);
+
+// Validate nickname
+if (isset($_POST ['clearnickname'])) {
+	update_option('smuggery_smugmugNickname', NULL);
+}
+// Clear nickname
+if (isset($_POST['validatenickname'])) {
+	update_option ('smuggery_smugmugNickname', htmlspecialchars ( $_POST [ 'smuggery_smugmugNickname' ], ENT_QUOTES ) );
+}
 // If the form was just submitted (options updated), ...
-if ( isset ( $_POST [ 'submitted' ] ) ) {
-	update_option ( 'smuggery_galleryTitle', htmlspecialchars ( $_POST [ 'smuggery_galleryTitle' ], ENT_QUOTES ) );
-	update_option ( 'smuggery_smugmugUsername', htmlspecialchars ( $_POST [ 'smuggery_smugmugUsername' ], ENT_QUOTES ) );
+if (isset($_POST ['updatedisplayoptions'])) {
+	update_option ('smuggery_galleryTitle', htmlspecialchars ( $_POST [ 'smuggery_galleryTitle' ], ENT_QUOTES ) );
 ?>
 	<div id="message" class="updated fade">
 		<p>
@@ -20,6 +30,20 @@ if ( isset ( $_POST [ 'submitted' ] ) ) {
 	</div>
 <?php
 }
+?>
+
+<?php
+// First thing's first, we need to find out if we have a valid SmugMug username to create our options later on this page.
+$validatedNickname = false;
+try {
+	$f->login();
+	$albums = $f->albums_get('NickName=' . get_option('smuggery_smugmugNickname'));
+	$validatedNickname = true;
+}
+catch (Exception $e) {
+	$validatedNickname = false;
+	//echo "{$e->getMessage()} (Error Code: {$e->getCode()})";
+} 
 ?>
 
 <div class="wrap">
@@ -38,16 +62,39 @@ if ( isset ( $_POST [ 'submitted' ] ) ) {
 	<br />
 	<input type="text" name="smuggery_galleryTitle" size="100" value="<?php echo stripslashes ( get_option ( 'smuggery_galleryTitle' ) ); ?>" />
 </p>
+<p>
+	<input type="submit" name="updatedisplayoptions" value="Update Display Options" />
+</p>
 
 <h3>
 	SmugMug Account Details
 </h3>
+<?php if (!$validatedNickname) { ?>
 <p>
-	SmugMug Username: 
-	<input type="text" name="smuggery_smugmugUsername" maxlength="100" size="100" value="<?php echo stripslashes ( get_option ( 'smuggery_smugmugUsername' ) ) ?>" />
+	SmugMug was unable to validate your nickname. You must supply a valid nickname to use this plugin.
+	<br />
+	SmugMug Nickname: 
+	<input type="text" name="smuggery_smugmugNickname" value="<?php echo stripslashes ( get_option ( 'smuggery_smugmugNickname' ) ) ?>" />
+	<input type="submit" name="validatenickname" value = "Use Nickname" />
 </p>
-
-<input type="submit" name="submitted" value="Update Options &raquo;" />
+<?php } else { ?>
+<p>
+	<?php
+	$numAlbums = count($albums);
+	echo "Getting info on $numAlbums albums...";
+	/*
+	$images = $f->images_get("AlbumID={$albums['0']['id']}", "AlbumKey={$albums['0']['Key']}", "Heavy=1");
+	$images = ($f->APIVer == "1.2.2") ? $images['Images'] : $images;
+	// Display the thumbnails and link to the medium image for each image
+	foreach ($images as $image) {
+		echo '<a href="'.$image['MediumURL'].'"><img src="'.$image['TinyURL'].'" title="'.$image['Caption'].'" alt="'.$image['id'].'" /></a>';
+	}
+	*/
+	?>
+	<br />
+	<input type="submit" name="clearnickname" value = "Clear Nickname" />
+</p>
+<?php } ?>
 
 <!-- End of Options Page -->
 	</form>

@@ -14,18 +14,23 @@ Author URI: http://www.freerobby.com
 */	
 ?>
 <?php
+///////////////
+// Constants //
+///////////////
+define( 'SMUGGERY_APIKEY', 'f83PiPGvYhcek14Zu8Og4rLPDYd2wsxH'); // Smuggery API key
+define( 'SMUGGERY_APPINFO', 'Smuggery/0.1 (http://www.freerobby.com/smuggery)');
 ////////////////////
 // Plugin options //
 ////////////////////
 // Option keys
-global $ds_ap_options_names;
-$ds_ap_options_names = array (
+global $smuggery_optionnames;
+$smuggery_optionnames = array (
 	'smuggery_galleryTitle',
-	'smuggery_smugmugUsername'
+	'smuggery_smugmugNickname'
 	);
 
-global $ds_ap_options_vals;
-$ds_ap_options_vals = array (
+global $smuggery_optionvals;
+$smuggery_optionvals = array (
 	"My Gallery",
 	NULL
 );
@@ -34,8 +39,10 @@ $ds_ap_options_vals = array (
 // Includes //
 //////////////
 
+// PHPSmug
+require_once ('phpSmug/phpSmug.php');
 // Wordpress Administrative Functions
-require_once ( ABSPATH . '/wp-admin/admin-functions.php' );
+require_once (ABSPATH . '/wp-admin/admin-functions.php');
 
 /////////////////////////////////
 // Wordpress Hook Declarations //
@@ -64,20 +71,21 @@ function smuggery_parsecontent ( $content ) {
 }
 function smuggery_install () {
 	// Add our options with their default values as defined.
-	global $ds_ap_options_names;
-	global $ds_ap_options_vals;
-	$num_opts = count($ds_ap_options_names);
+	global $smuggery_optionnames;
+	global $smuggery_optionvals;
+	$num_opts = count($smuggery_optionnames);
 	for ($i = 0; $i < $num_opts; $i++) {
-		add_option($ds_ap_options_names[$i], $ds_ap_options_vals[$i]);
+		add_option($smuggery_optionnames[$i], $smuggery_optionvals[$i]);
 	}
 }
 function smuggery_uninstall () {
 	// Remove options from database on uninstall.
-	//global $ds_ap_options_names;
-	//$num_opts = count($ds_ap_options_names);
-	//for ($i = 0; $i < $num_opts; $i++) {
-	//	delete_option($ds_ap_options_names[$i], $ds_ap_options_vals[$i]);
-	//}
+	global $smuggery_optionnames;
+	global $smuggery_optionvals;
+	$num_opts = count($smuggery_optionnames);
+	for ($i = 0; $i < $num_opts; $i++) {
+		delete_option($smuggery_optionnames[$i], $smuggery_optionvals[$i]);
+	}
 }
 
 ///////////////////
