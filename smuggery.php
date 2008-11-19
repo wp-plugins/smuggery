@@ -14,6 +14,7 @@ Author URI: http://www.freerobby.com
 */	
 ?>
 <?php
+
 ///////////////
 // Constants //
 ///////////////
@@ -48,12 +49,11 @@ $smuggery_optionvals = array (
 // PHPSmug
 require_once ('phpSmug/phpSmug.php');
 // Wordpress Administrative Functions
-require_once (ABSPATH . '/wp-admin/admin-functions.php');
+require_once (ABSPATH . 'wp-admin/admin-functions.php');
 
 /////////////////////////////////
 // Wordpress Hook Declarations //
 /////////////////////////////////
-
 // Plugin activation
 register_activation_hook ( __FILE__ , 'smuggery_install' );
 // Plugin deactivation
@@ -150,7 +150,7 @@ function smuggery_substitutegallerytags($content) {
 		$f->login();
 		$images = $f->images_get("AlbumID=$album_id", "AlbumKey=$album_key", "Heavy=1");
 		foreach ($images as $image) {
-			$rcontent .= '<a href="'.$image['MediumURL'].'"><img src="'.$image['TinyURL'].'" title="'.$image['Caption'].'" alt="'.$image['id'].'" /></a>';
+			$rcontent .= '<a href="'.$image['LargeURL'].'" rel="lightbox['.$id.']"><img src="'.$image['TinyURL'].'" title="'.$image['Caption'].'" alt="'.$image['id'].'" /></a>';
 	}
 		
 		$content = smuggery_mergeparsedtagcontent($content, SMUGGERY_TAGGALLERY, $rcontent);
